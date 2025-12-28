@@ -5,18 +5,6 @@
   <title>Discord Widget Generator</title>
   <link rel="stylesheet" href="style.css">
 </head>
-  <footer class="footer">
-  <span>
-    Hecho por <strong>dante el gamer</strong>
-  </span>
-
-  <a
-    href="https://github.com/dante-el-gamer"
-    target="_blank"
-  >
-    Código fuente
-  </a>
-</footer>
 <body>
 
 <div class="app">
@@ -31,12 +19,6 @@
     <label>Invite URL</label>
     <input id="inviteUrl" placeholder="https://discord.gg/xxxx">
 
-    <label>Título</label>
-    <input id="titleInput" value="Mi servidor">
-
-    <label>Descripción</label>
-    <textarea id="descInput">Únete a nuestra comunidad 😎</textarea>
-
     <label>Color principal</label>
     <input type="color" id="colorInput" value="#7c3aed">
 
@@ -50,7 +32,7 @@
     <div class="discord-card" id="widget">
       <div class="discord-top">
         <div class="discord-icon" id="icon">
-          <span id="badge">●</span>
+          <span class="online-dot"></span>
         </div>
 
         <div class="discord-info">
@@ -58,7 +40,9 @@
           <p id="dcCount">👤 -- personas</p>
         </div>
 
-        <a id="joinBtn" class="discord-btn" target="_blank">Unirse</a>
+        <a id="joinBtn" class="discord-btn" target="_blank">
+          Unirse
+        </a>
       </div>
 
       <p class="discord-desc" id="dcDesc"></p>
@@ -66,6 +50,13 @@
   </main>
 
 </div>
+
+<footer class="footer">
+  <span>Hecho con 💛 por <strong>dante el gamer</strong></span>
+  <a href="https://github.com/dante-el-gamer" target="_blank">
+    Código fuente
+  </a>
+</footer>
 
 <script src="script.js"></script>
 </body>

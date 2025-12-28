@@ -1,25 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Discord Widget Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
 <div class="app">
 
   <!-- PANEL IZQUIERDO -->
   <aside class="controls">
-    <h2>Widget Settings</h2>
+    <h2>🎛 Widget Generator</h2>
 
     <label>Server ID</label>
-    <input type="text" id="serverId" placeholder="1345781090375303308">
+    <input id="serverId" placeholder="1345781090375303308">
 
     <label>Invite URL</label>
-    <input type="text" id="inviteUrl" placeholder="https://discord.gg/...">
+    <input id="inviteUrl" placeholder="https://discord.gg/xxxx">
 
     <label>Título</label>
-    <input type="text" id="title" value="Mi servidor">
+    <input id="titleInput" value="Mi servidor">
 
     <label>Descripción</label>
-    <textarea id="desc"></textarea>
+    <textarea id="descInput">Únete a nuestra comunidad 😎</textarea>
 
     <label>Color principal</label>
-    <input type="color" id="color" value="#7c3aed">
+    <input type="color" id="colorInput" value="#7c3aed">
+
+    <button id="copyBtn">📋 Copiar código</button>
   </aside>
 
-  <!-- PANEL DERECHO -->
+  <!-- PREVIEW -->
   <main class="preview">
     <h2>Preview</h2>
+
+    <div class="discord-card" id="widget">
+      <div class="discord-top">
+        <div class="discord-icon" id="icon">
+          <span id="badge">●</span>
+        </div>
+
+        <div class="discord-info">
+          <h3 id="dcName">Servidor</h3>
+          <p id="dcCount">👤 -- personas</p>
+        </div>
+
+        <a id="joinBtn" class="discord-btn" target="_blank">Unirse</a>
+      </div>
+
+      <p class="discord-desc" id="dcDesc"></p>
+    </div>
+  </main>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

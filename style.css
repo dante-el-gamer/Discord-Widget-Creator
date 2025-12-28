@@ -76,12 +76,16 @@ body {
   gap: 15px;
 }
 
-.discord-icon {
+..discord-icon {
   width: 60px;
   height: 60px;
   background: var(--color, #7c3aed);
   border-radius: 50%;
   position: relative;
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .discord-icon span {

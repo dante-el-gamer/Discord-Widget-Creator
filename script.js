@@ -1,306 +1,210 @@
-:root {
-  --bg-app: #202225;
-  --bg-panel: #2f3136;
-  --bg-preview: #36393f;
-  --text-primary: #ffffff;
-  --text-secondary: #b9bbbe;
-  --accent: #5865F2; /* Discord Blurple */
-  --accent-hover: #4752c4;
-  --success: #3ba55c;
-  --input-bg: #202225;
-  --border: #202225;
+const elements = {
+  serverId: document.getElementById("serverId"),
+  inviteUrl: document.getElementById("inviteUrl"),
+  titleInput: document.getElementById("titleInput"),
+  descInput: document.getElementById("descInput"),
+  iconInput: document.getElementById("iconInput"),
+  colorInput: document.getElementById("colorInput"),
+  showCount: document.getElementById("showCount"),
+
+  // Preview Elements
+  dcName: document.getElementById("dcName"),
+  dcCount: document.getElementById("dcCount"),
+  dcDesc: document.getElementById("dcDesc"),
+  joinBtn: document.getElementById("joinBtn"),
+  icon: document.getElementById("icon"),
+  widget: document.getElementById("widget"),
+  copyBtn: document.getElementById("copyBtn"),
+  codePreview: document.getElementById("codePreview")
+};
+
+let serverData = {
+  name: "Server Name",
+  presence_count: 0,
+  icon: null
+};
+
+// --- HANDLERS ---
+
+function updatePreview() {
+  // Title: Override or Server Name
+  const nameText = elements.titleInput.value.trim() || serverData.name;
+  elements.dcName.textContent = nameText;
+
+  // Description
+  const descText = elements.descInput.value.trim() || "Join our community!";
+  elements.dcDesc.textContent = descText;
+  elements.dcDesc.style.display = descText ? "block" : "none";
+
+  // Invite Link
+  const url = elements.inviteUrl.value.trim() || "#";
+  elements.joinBtn.href = url;
+
+  // Online Count
+  if (elements.showCount.checked) {
+    elements.dcCount.textContent = `🟢 ${serverData.presence_count} Online`;
+    elements.dcCount.style.display = "block";
+  } else {
+    elements.dcCount.style.display = "none";
+  }
+
+  // Accent Color (CSS Variable)
+  // Icon
+  const iconUrl = elements.iconInput.value.trim() || serverData.icon;
+  if (iconUrl) {
+    elements.icon.innerHTML = `<img src="${iconUrl}" alt="Icon" style="width: 100%; height: 100%; border-radius: 14px; object-fit: cover;">`;
+    elements.icon.style.backgroundColor = "transparent";
+  } else {
+    elements.icon.innerHTML = '<span class="online-dot"></span>';
+    elements.icon.style.backgroundColor = elements.colorInput.value;
+  }
+
+  // Apply accent color to Join button only and adjust valid text color
+  elements.joinBtn.style.backgroundColor = elements.colorInput.value;
+  elements.joinBtn.style.color = getContrastColor(elements.colorInput.value);
+
+  // Update Code Preview
+  elements.codePreview.value = generateCode();
 }
 
-* {
-  box-sizing: border-box;
+// Ensure hex color is valid (6 digits) or provide fallback
+function getContrastColor(hex) {
+  if (!hex || hex.length !== 7) return "#ffffff";
+
+  const r = parseInt(hex.substr(1, 2), 16);
+  const g = parseInt(hex.substr(3, 2), 16);
+  const b = parseInt(hex.substr(5, 2), 16);
+
+  // YIQ equation
+  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+  return (yiq >= 128) ? "#000000" : "#ffffff";
 }
 
-body {
-  margin: 0;
-  background: var(--bg-app);
-  color: var(--text-primary);
+async function fetchServerInfo() {
+  const id = elements.serverId.value.trim();
+  if (!id || id.length < 15) return; // Simple validation
+
+  try {
+    const res = await fetch(`https://discord.com/api/guilds/${id}/widget.json`);
+    if (!res.ok) throw new Error("Server not found or widget disabled");
+
+    const data = await res.json();
+    serverData.name = data.name;
+    serverData.presence_count = data.presence_count;
+
+    // Reset warnings
+    elements.dcCount.style.color = "";
+
+    // Auto-fill invite if empty
+    if (!elements.inviteUrl.value && data.instant_invite) {
+      elements.inviteUrl.value = data.instant_invite;
+      await fetchIconInfo(data.instant_invite);
+    } else if (elements.inviteUrl.value) {
+      await fetchIconInfo(elements.inviteUrl.value);
+    } else {
+      // Warning if no invite link found
+      // We'll update a small warning text or placeholder
+      elements.inviteUrl.placeholder = "⚠ No invite found. Please paste one.";
+      elements.iconInput.placeholder = "⚠ No invite found. Paste Icon URL.";
+    }
+
+    updatePreview();
+  } catch (err) {
+    console.error(err);
+    elements.dcCount.textContent = "⚠ Widget disabled or invalid ID";
+  }
+}
+
+function getInviteCode(url) {
+  const match = url.match(/(?:discord\.gg|discord\.com\/invite)\/([a-zA-Z0-9-]+)/);
+  return match ? match[1] : null;
+}
+
+async function fetchIconInfo(inviteUrl) {
+  const code = getInviteCode(inviteUrl);
+  if (!code) return;
+
+  try {
+    const res = await fetch(`https://discord.com/api/v9/invites/${code}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    if (data.guild && data.guild.icon) {
+      serverData.icon = `https://cdn.discordapp.com/icons/${data.guild.id}/${data.guild.icon}.png`;
+      elements.iconInput.value = serverData.icon;
+    }
+  } catch (e) {
+    console.error("Failed to fetch invite info", e);
+  }
+}
+
+function generateCode() {
+  const color = elements.colorInput.value;
+  const url = elements.inviteUrl.value || "#";
+  const name = elements.dcName.textContent;
+  const desc = elements.dcDesc.textContent;
+  const showCount = elements.showCount.checked;
+  const countText = elements.dcCount.textContent;
+
+  // Minimal inline CSS for portability
+  const html = `
+<div style="
   font-family: 'Inter', sans-serif;
-  height: 100vh;
-  overflow: hidden;
-}
-
-.app {
-  display: grid;
-  grid-template-columns: 400px 1fr;
-  height: 100vh;
-}
-
-/* --- CONTROLS PANEL --- */
-.controls {
-  background: var(--bg-panel);
-  padding: 30px;
-  overflow-y: auto;
-  border-right: 1px solid rgba(0,0,0,0.2);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.header h1 {
-  font-size: 24px;
-  margin: 0 0 5px 0;
-  color: var(--text-primary);
-}
-
-.header p {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-
-.divider {
-  border: 0;
-  height: 1px;
-  background: #40444b;
-  margin: 10px 0;
-}
-
-.control-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.control-group.row {
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.control-group label {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  letter-spacing: 0.5px;
-}
-
-.control-group input[type="text"],
-.control-group input[type="url"],
-.control-group textarea {
-  background: var(--input-bg);
-  border: 1px solid rgba(0,0,0,0.3);
-  padding: 10px;
-  border-radius: 4px;
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 14px;
-  transition: border-color 0.2s;
-}
-
-.control-group input:focus,
-.control-group textarea:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.control-group small {
-  color: var(--text-secondary);
-  font-size: 11px;
-}
-
-/* Color Input */
-input[type="color"] {
-  width: 50px;
-  height: 30px;
-  border: none;
-  background: none;
-  cursor: pointer;
-}
-
-/* Checkbox */
-input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  accent-color: var(--accent);
-  cursor: pointer;
-}
-
-/* Button */
-.btn-primary {
-  margin-top: auto;
-  background: var(--accent);
-  color: white;
-  border: none;
-  padding: 14px;
-  border-radius: 4px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.btn-primary:hover {
-  background: var(--accent-hover);
-}
-
-.btn-primary:active {
-  transform: translateY(1px);
-}
-
-/* --- PREVIEW AREA --- */
-.preview {
-  background: var(--bg-preview);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-  position: relative;
-}
-
-.preview-header h2 {
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    font-size: 14px;
-    letter-spacing: 1px;
-    margin-bottom: 20px;
-}
-
-.preview-note {
-    margin-top: 20px;
-    color: var(--text-secondary);
-    font-size: 12px;
-    opacity: 0.7;
-}
-
-/* --- WIDGET CARD --- */
-/* Note: These styles match the generated logic in JS mostly */
-.discord-card {
-  width: 100%;
-  max-width: 450px;
-  background: #202225; /* Darker card background */
+  background: #202225;
   border-radius: 8px;
   padding: 16px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-  font-family: 'Inter', sans-serif;
+  max-width: 400px;
   color: #fff;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+">
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <div style="
+      width: 48px; height: 48px; background: ${color}; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center; font-size: 24px; overflow: hidden;
+    ">
+      ${elements.iconInput.value ? `<img src="${elements.iconInput.value}" style="width: 100%; height: 100%; object-fit: cover;">` : "🎮"}
+    </div>
+    <div style="flex: 1; min-width: 0;">
+      <h3 style="margin: 0; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</h3>
+      ${showCount ? `<p style="margin: 4px 0 0; font-size: 12px; color: #b9bbbe;">${countText}</p>` : ""}
+    </div>
+    <a href="${url}" target="_blank" style="
+      background: ${color}; color: ${getContrastColor(color)}; text-decoration: none;
+      padding: 8px 16px; border-radius: 4px; font-size: 14px; font-weight: 600;
+    ">Join</a>
+  </div>
+  ${desc ? `<p style="margin: 12px 0 0; font-size: 13px; color: #dcddde; border-top: 1px solid #333; padding-top: 10px;">${desc}</p>` : ""}
+</div>`.trim();
+
+  return html;
 }
 
-.discord-top {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
+// --- EVENTS ---
 
-.discord-icon {
-  width: 50px;
-  height: 50px;
-  background-color: #36393f;
-  border-radius: 16px; /* Discord squircle-ish */
-  position: relative;
-  background-size: cover;
-  background-position: center;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-}
+// Input listeners for live preview
+[elements.titleInput, elements.descInput, elements.inviteUrl, elements.colorInput, elements.showCount, elements.iconInput]
+  .forEach(el => el.addEventListener("input", updatePreview));
 
-.online-dot {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 14px;
-  height: 14px;
-  background: var(--success);
-  border-radius: 50%;
-  border: 3px solid #202225;
-}
+// Also refetch icon when manual invite link changes
+elements.inviteUrl.addEventListener("change", (e) => fetchIconInfo(e.target.value).then(updatePreview));
 
-.discord-info {
-  flex: 1;
-  min-width: 0; /* Text truncation fix */
-}
+// Server ID fetch (debounced slightly via blur or enter ideally, but change is fine)
+elements.serverId.addEventListener("change", fetchServerInfo);
 
-.discord-info h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+// Copy Button
+elements.copyBtn.addEventListener("click", () => {
+  const code = generateCode();
+  navigator.clipboard.writeText(code).then(() => {
+    const originalText = elements.copyBtn.innerHTML;
+    elements.copyBtn.innerHTML = "<span>✅</span> Code Copied";
+    elements.copyBtn.style.background = "#3ba55c";
 
-.discord-info p {
-  margin: 4px 0 0;
-  font-size: 12px;
-  color: #b9bbbe;
-  font-weight: 500;
-}
+    setTimeout(() => {
+      elements.copyBtn.innerHTML = originalText;
+      elements.copyBtn.style.background = ""; // Reset to CSS default
+    }, 2000);
+  });
+});
 
-.discord-btn {
-  background: var(--success);
-  color: white;
-  text-decoration: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 600;
-  transition: opacity 0.2s;
-  white-space: nowrap;
-}
-
-.discord-btn:hover {
-  opacity: 0.9;
-}
-
-.discord-desc {
-  margin: 12px 0 0 0;
-  font-size: 13px;
-  color: #dcddde;
-  line-height: 1.4;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-}
-
-/* --- FOOTER --- */
-.footer {
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  left: 400px;
-  padding: 10px 20px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  display: flex;
-  justify-content: space-between;
-  background: rgba(0,0,0,0.2);
-  pointer-events: none;
-}
-.footer a {
-    pointer-events: auto;
-    color: var(--accent);
-    text-decoration: none;
-}
-
-/* Responsiveness */
-@media (max-width: 800px) {
-  .app {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
-    overflow-y: auto;
-    height: auto;
-  }
-  
-  .controls {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-  
-  .footer {
-    left: 0;
-    position: relative;
-    background: #202225;
-  }
-}
+// Initialize
+updatePreview();

@@ -1,63 +1,112 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
+
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Discord Widget Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<div class="app">
+  <div class="app">
 
-  <!-- PANEL IZQUIERDO -->
-  <aside class="controls">
-    <h2>🎛 Widget Generator</h2>
+    <!-- CONTROLS PANEL -->
+    <aside class="controls">
+      <header class="header">
+        <h1>🎛 Widget Creator</h1>
+        <p>Create a stylish widget for your server</p>
+      </header>
 
-    <label>Server ID</label>
-    <input id="serverId" placeholder="1345781090375303308">
-
-    <label>Invite URL</label>
-    <input id="inviteUrl" placeholder="https://discord.gg/xxxx">
-
-    <label>Color principal</label>
-    <input type="color" id="colorInput" value="#7c3aed">
-
-    <button id="copyBtn">📋 Copiar código</button>
-  </aside>
-
-  <!-- PREVIEW -->
-  <main class="preview">
-    <h2>Preview</h2>
-
-    <div class="discord-card" id="widget">
-      <div class="discord-top">
-        <div class="discord-icon" id="icon">
-          <span class="online-dot"></span>
-        </div>
-
-        <div class="discord-info">
-          <h3 id="dcName">Servidor</h3>
-          <p id="dcCount">👤 -- personas</p>
-        </div>
-
-        <a id="joinBtn" class="discord-btn" target="_blank">
-          Unirse
-        </a>
+      <div class="control-group">
+        <label for="serverId">Server ID</label>
+        <input id="serverId" type="text" placeholder="Ex: 1345781090375303308">
+        <small>Select Server > Server Settings > Widget > Enable Server Widget > Server ID</small>
       </div>
 
-      <p class="discord-desc" id="dcDesc"></p>
-    </div>
-  </main>
+      <div class="control-group">
+        <label for="inviteUrl">Invite Link</label>
+        <input id="inviteUrl" type="url" placeholder="https://discord.gg/your-server">
+      </div>
 
-</div>
+      <div class="control-group">
+        <label for="iconInput">Server Icon URL (Optional)</label>
+        <input id="iconInput" type="url" placeholder="Auto-detected or paste URL...">
+      </div>
 
-<footer class="footer">
-  <span>Hecho por <strong>dante el gamer</strong></span>
-  <a href="https://github.com/dante-el-gamer" target="_blank">
-    Código fuente
-  </a>
-</footer>
+      <hr class="divider">
 
-<script src="script.js"></script>
+      <div class="control-group">
+        <label for="titleInput">Server Name (Optional)</label>
+        <input id="titleInput" type="text" placeholder="Override name...">
+      </div>
+
+      <div class="control-group">
+        <label for="descInput">Description (Optional)</label>
+        <textarea id="descInput" rows="3" placeholder="A brief description..."></textarea>
+      </div>
+
+      <div class="control-group row">
+        <label for="colorInput">Accent Color</label>
+        <input type="color" id="colorInput" value="#5865F2">
+      </div>
+
+      <div class="control-group row">
+        <label for="showCount">Show online count</label>
+        <input type="checkbox" id="showCount" checked>
+      </div>
+
+      <div class="control-group">
+        <label for="codePreview">Generated HTML</label>
+        <textarea id="codePreview" readonly rows="6"
+          style="font-family: monospace; font-size: 12px; white-space: pre; resize: vertical; color: #b9bbbe; background: #2f3136;"></textarea>
+      </div>
+
+      <button id="copyBtn" class="btn-primary">
+        <span>📋</span> Copy HTML Code
+      </button>
+    </aside>
+
+    <!-- PREVIEW AREA -->
+    <main class="preview">
+      <div class="preview-header">
+        <h2>Preview</h2>
+      </div>
+
+      <div class="discord-card" id="widget" translate="no">
+        <div class="discord-top">
+          <div class="discord-icon" id="icon">
+            <span class="online-dot"></span>
+          </div>
+
+          <div class="discord-info">
+            <h3 id="dcName">Server Name</h3>
+            <p id="dcCount">� 0 en línea</p>
+          </div>
+
+          <a id="joinBtn" class="discord-btn" target="_blank">Join</a>
+        </div>
+
+        <p class="discord-desc" id="dcDesc">Join our community!</p>
+      </div>
+
+      <div class="preview-note">
+        This is how it will look on your website.
+      </div>
+    </main>
+
+  </div>
+
+  <footer class="footer">
+    <span>Created by <strong>dante el gamer</strong></span>
+    <a href="https://github.com/dante-el-gamer/Discord-Widget-Creator" target="_blank">Source Code</a>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
+
 </html>
